@@ -3,85 +3,106 @@ package game
 import "fmt"
 
 const (
-	GAME_SIZE int = 7
+	GAME_SIZE int = 9
 )
 
 type Game struct {
-	Board   *Board
-	Players [2]*Player
-	Turn    PlayerColor
+	Board         *Board
+	ActivePlayer  *Player
+	WaitingPlayer *Player
 }
 
 func NewGame() *Game {
 	return &Game{
-		Board: NewBoard(GAME_SIZE),
-		Players: [2]*Player{
-			NewPlayer(WHITE, GAME_SIZE),
-			NewPlayer(BLACK, GAME_SIZE),
-		},
-		Turn: WHITE,
+		Board:         NewBoard(GAME_SIZE),
+		ActivePlayer:  NewPlayer(WHITE, GAME_SIZE),
+		WaitingPlayer: NewPlayer(BLACK, GAME_SIZE),
 	}
 }
 
 func (g Game) Complete() bool {
-	return g.Winner() != nil
+	return g.Winner() != NONE
 }
 
-func (g Game) Winner() *PlayerColor {
-	var winner PlayerColor
-	switch {
-	case g.Players[WHITE].PawnPos.Row == g.Board.Size-1:
-		winner = WHITE
-	case g.Players[BLACK].PawnPos.Row == 0:
-		winner = BLACK
-	default:
-		return nil
+func (g Game) Players() []*Player {
+	return []*Player{
+		g.ActivePlayer,
+		g.WaitingPlayer,
 	}
-	return &winner
+}
+
+func (g Game) PlayerForColor(color PlayerColor) *Player {
+	for _, p := range g.Players() {
+		if p.Color == color {
+			return p
+		}
+	}
+	return nil
+}
+
+func (g Game) Winner() PlayerColor {
+	for _, p := range g.Players() {
+		if p.Winner(g.Board) {
+			return p.Color
+		}
+	}
+	return NONE
 }
 
 func (g *Game) Move(m Move) bool {
 	success := m.apply(g)
 	if success {
-		g.Turn = OtherPlayer(g.Turn)
+		g.ActivePlayer, g.WaitingPlayer = g.WaitingPlayer, g.ActivePlayer
 	}
 	return success
 }
 
-func (g Game) CurrentPlayer() *Player {
-	return g.Players[g.Turn]
-}
-
-func (g Game) OtherPlayer() *Player {
-	return g.Players[OtherPlayer(g.Turn)]
+func (g Game) Copy() *Game {
+	return &Game{
+		Board:         g.Board.Copy(),
+		ActivePlayer:  g.ActivePlayer.Copy(),
+		WaitingPlayer: g.WaitingPlayer.Copy(),
+	}
 }
 
 func (g Game) String() string {
-	ret := fmt.Sprintf("Turn: %v\n", g.Turn)
-	ret += g.layoutBoard(nil) + "\n"
-	//	for _, color := range []PlayerColor{WHITE, BLACK} {
-	//		ret += "-------------------\n\n"
-	//		ret += g.layoutBoard(&color) + "\n"
-	//	}
+	ret := fmt.Sprintf("Turn: %v\n", g.ActivePlayer.Color)
+	ret += g.layoutBoard(NONE) + "\n"
+	for _, color := range []PlayerColor{WHITE, BLACK} {
+		ret += "-------------------\n\n"
+		ret += g.layoutBoard(color) + "\n"
+	}
 	return ret
 }
 
-func (g Game) layoutBoard(distColor *PlayerColor) string {
+func (g Game) playerAtPos(pos Position) *Player {
+	for _, p := range g.Players() {
+		if p.PawnPos == pos {
+			return p
+		}
+	}
+	return nil
+}
+
+func (g Game) layoutBoard(distColor PlayerColor) string {
 	ret := ""
-	distances := Distances(g.Board)
+	distances := Distances(g.Board, distColor)
 	rowP := NewPosition(g.Board.Size-1, 0)
 	prevWalls := make([]bool, g.Board.Size-1)
 	for {
 		colP := rowP
 		i := 0
 		for {
-			if g.Players[WHITE].PawnPos == colP {
-				ret += " W "
-			} else if g.Players[BLACK].PawnPos == colP {
-				ret += " B "
-			} else if distColor == nil {
+			if p := g.playerAtPos(colP); p != nil {
+				switch p.Color {
+				case WHITE:
+					ret += " W "
+				case BLACK:
+					ret += " B "
+				}
+			} else if distColor == NONE {
 				ret += "   "
-			} else if dist, found := distances[*distColor][colP]; found {
+			} else if dist, found := distances[colP]; found {
 				ret += fmt.Sprintf(" %d ", dist)
 			} else {
 				ret += "   "

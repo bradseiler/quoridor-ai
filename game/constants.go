@@ -1,16 +1,10 @@
 package game
 
-type WallDirection int
-
-const (
-	VERTICAL WallDirection = iota
-	HORIZONTAL
-)
-
 type PlayerColor int
 
 const (
-	WHITE PlayerColor = iota
+	NONE PlayerColor = iota
+	WHITE
 	BLACK
 )
 

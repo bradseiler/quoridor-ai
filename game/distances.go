@@ -4,17 +4,14 @@ import (
 	"container/heap"
 )
 
-func Distances(b *Board) [2]map[Position]int {
-	ret := [2]map[Position]int{
-		map[Position]int{},
-		map[Position]int{},
+func Distances(b *Board, color PlayerColor) map[Position]int {
+	if color == NONE {
+		return nil
 	}
 
-	for _, color := range []PlayerColor{WHITE, BLACK} {
-		dMap := ret[color]
-		heap := newNodeHeap(b, color, dMap)
-		populateDistances(b, dMap, heap)
-	}
+	ret := map[Position]int{}
+	heap := newNodeHeap(b, color, ret)
+	populateDistances(b, ret, heap)
 	return ret
 }
 

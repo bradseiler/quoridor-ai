@@ -11,6 +11,8 @@ type humanPlayer struct {
 	scanner *bufio.Scanner
 }
 
+var _ Agent = &humanPlayer{}
+
 func NewHumanPlayer(scanner *bufio.Scanner) Agent {
 	return &humanPlayer{
 		scanner: scanner,
@@ -35,13 +37,19 @@ func (hp *humanPlayer) NextMove(g *game.Game) game.Move {
 			switch o {
 			case "v":
 				return game.MoveWall{
-					Position:    game.NewPosition(r, c),
-					Orientation: game.VERTICAL,
+					Wall: game.Wall{
+						Row:       r,
+						Col:       c,
+						Direction: game.VERTICAL,
+					},
 				}
 			case "h":
 				return game.MoveWall{
-					Position:    game.NewPosition(r, c),
-					Orientation: game.HORIZONTAL,
+					Wall: game.Wall{
+						Row:       r,
+						Col:       c,
+						Direction: game.HORIZONTAL,
+					},
 				}
 			}
 		}

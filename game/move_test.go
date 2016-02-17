@@ -42,7 +42,13 @@ func TestMovePawn(t *testing.T) {
 		if tc.expectedResult != g.Move(move) {
 			t.Errorf("(%v) Expected move %v to have result %v", n, move, tc.expectedResult)
 		}
-		if actualPosition := g.Players[game.WHITE].PawnPos; tc.expectedPosition != actualPosition {
+		var player *game.Player
+		if tc.expectedResult {
+			player = g.WaitingPlayer
+		} else {
+			player = g.ActivePlayer
+		}
+		if actualPosition := player.PawnPos; tc.expectedPosition != actualPosition {
 			t.Errorf("(%v) Expected move %v to end at %v, not %v", n, move, tc.expectedPosition, actualPosition)
 		}
 	}
@@ -51,24 +57,19 @@ func TestMovePawn(t *testing.T) {
 func TestMoveWall(t *testing.T) {
 	moves := []game.MoveWall{
 		{
-			Position:    game.NewPosition(3, 0),
-			Orientation: game.HORIZONTAL,
+			Wall: game.NewWall(3, 0, game.HORIZONTAL),
 		},
 		{
-			Position:    game.NewPosition(3, 2),
-			Orientation: game.HORIZONTAL,
+			Wall: game.NewWall(3, 2, game.HORIZONTAL),
 		},
 		{
-			Position:    game.NewPosition(3, 4),
-			Orientation: game.HORIZONTAL,
+			Wall: game.NewWall(3, 4, game.HORIZONTAL),
 		},
 		{
-			Position:    game.NewPosition(2, 4),
-			Orientation: game.VERTICAL,
+			Wall: game.NewWall(2, 4, game.VERTICAL),
 		},
 		{
-			Position:    game.NewPosition(0, 4),
-			Orientation: game.VERTICAL,
+			Wall: game.NewWall(0, 4, game.VERTICAL),
 		},
 	}
 
@@ -76,7 +77,7 @@ func TestMoveWall(t *testing.T) {
 	for i, move := range moves {
 		expected := i != len(moves)-1
 		if expected != g.Move(move) {
-			t.Errorf("Expected move %v to be %v", move, expected)
+			t.Errorf("(%v) Expected move %v to be %v", i, move, expected)
 		}
 	}
 }

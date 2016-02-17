@@ -21,14 +21,15 @@ func NewGameRunner(whiteAgent, blackAgent Agent) *GameRunner {
 func (gp *GameRunner) Play() {
 	gp.PrintGamePrompt()
 	for !gp.Game.Complete() {
-		agent := gp.Agents[gp.Game.Turn]
-		move := agent.NextMove(gp.Game)
+		agent := gp.Agents[gp.Game.ActivePlayer.Color]
+		move := agent.NextMove(gp.Game.Copy())
 		if _, ok := move.(game.MoveQuit); ok {
 			fmt.Println("Game terminated.")
 			break
 		}
 		if !gp.Game.Move(move) {
 			fmt.Printf("Invalid move: %v\n", move)
+			panic(nil)
 		} else {
 			gp.PrintGamePrompt()
 		}

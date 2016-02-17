@@ -9,6 +9,8 @@ type simpleIntelligence struct {
 	color game.PlayerColor
 }
 
+var _ cmd.Agent = &simpleIntelligence{}
+
 func NewSimpleIntelligence(color game.PlayerColor) cmd.Agent {
 	return &simpleIntelligence{
 		color: color,
@@ -16,8 +18,8 @@ func NewSimpleIntelligence(color game.PlayerColor) cmd.Agent {
 }
 
 func (si *simpleIntelligence) NextMove(g *game.Game) game.Move {
-	distances := game.Distances(g.Board)[si.color]
-	curPos := g.Players[si.color].PawnPos
+	distances := game.Distances(g.Board, si.color)
+	curPos := g.PlayerForColor(si.color).PawnPos
 	minDirection := game.NO_DIRECTION
 	minDist := 0
 	for _, direction := range []game.Direction{game.UP, game.DOWN, game.LEFT, game.RIGHT} {

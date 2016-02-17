@@ -16,11 +16,6 @@ func TestNewBoard(t *testing.T) {
 	}
 }
 
-type wall struct {
-	pos game.Position
-	dir game.WallDirection
-}
-
 func newAdjacency(sr, sc, er, ec int) []game.Position {
 	return []game.Position{
 		game.NewPosition(sr, sc),
@@ -30,15 +25,12 @@ func newAdjacency(sr, sc, er, ec int) []game.Position {
 
 func TestPlaceAndRemoveWall(t *testing.T) {
 	testCases := []struct {
-		wallsToPlace      []wall
+		wallsToPlace      []game.Wall
 		adjacenciesToLose [][]game.Position
 	}{
 		{
-			wallsToPlace: []wall{
-				{
-					pos: game.NewPosition(1, 1),
-					dir: game.HORIZONTAL,
-				},
+			wallsToPlace: []game.Wall{
+				game.NewWall(1, 1, game.HORIZONTAL),
 			},
 			adjacenciesToLose: [][]game.Position{
 				newAdjacency(1, 1, 2, 1),
@@ -46,11 +38,8 @@ func TestPlaceAndRemoveWall(t *testing.T) {
 			},
 		},
 		{
-			wallsToPlace: []wall{
-				{
-					pos: game.NewPosition(1, 1),
-					dir: game.VERTICAL,
-				},
+			wallsToPlace: []game.Wall{
+				game.NewWall(1, 1, game.VERTICAL),
 			},
 			adjacenciesToLose: [][]game.Position{
 				newAdjacency(1, 1, 1, 2),
@@ -67,7 +56,7 @@ func TestPlaceAndRemoveWall(t *testing.T) {
 			}
 		}
 		for _, wallToPlace := range tc.wallsToPlace {
-			board.PlaceWall(wallToPlace.pos, wallToPlace.dir)
+			board.PlaceWall(wallToPlace)
 		}
 		for _, adj := range tc.adjacenciesToLose {
 			if board.Adjacent(adj[0], adj[1]) {
@@ -75,7 +64,7 @@ func TestPlaceAndRemoveWall(t *testing.T) {
 			}
 		}
 		for _, wallToPlace := range tc.wallsToPlace {
-			board.RemoveWall(wallToPlace.pos, wallToPlace.dir)
+			board.RemoveWall(wallToPlace)
 		}
 		for _, adj := range tc.adjacenciesToLose {
 			if !board.Adjacent(adj[0], adj[1]) {
