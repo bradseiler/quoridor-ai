@@ -30,6 +30,21 @@ func NewBoard(size int) *Board {
 	return b
 }
 
+func (b Board) Copy() *Board {
+	ret := &Board{
+		walls:       map[Position]WallDirection{},
+		connections: map[Position]positionSlice{},
+		Size:        b.Size,
+	}
+	for p, wall := range b.walls {
+		ret.walls[p] = wall
+	}
+	for p, conn := range b.connections {
+		ret.connections[p] = conn
+	}
+	return ret
+}
+
 func (b Board) Adjacents(pos Position) []Position {
 	return b.connections[pos]
 }

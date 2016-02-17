@@ -1,5 +1,7 @@
 package game
 
+import "fmt"
+
 type Move interface {
 	apply(*Game) bool
 }
@@ -11,15 +13,16 @@ type MovePawn struct {
 var _ Move = MovePawn{}
 
 func (m MovePawn) apply(g *Game) bool {
-	curPos := g.CurrentPlayer().PawnPos
+	curPos := g.ActivePlayer.PawnPos
 	newPos := curPos.Move(m.Direction)
 	if !g.Board.Adjacent(curPos, newPos) {
+		fmt.Printf("Not adjacent: %v, %v\n", curPos, newPos)
 		return false
 	}
-	if newPos == g.OtherPlayer().PawnPos {
+	if newPos == g.WaitingPlayer.PawnPos {
 		return false
 	}
-	g.CurrentPlayer().PawnPos = newPos
+	g.ActivePlayer.PawnPos = newPos
 	return true
 }
 
@@ -31,16 +34,16 @@ type MoveWall struct {
 var _ Move = MoveWall{}
 
 func (m MoveWall) apply(g *Game) bool {
-	if g.CurrentPlayer().WallsLeft == 0 {
+	if g.ActivePlayer.WallsLeft == 0 {
 		return false
 	}
 	success := g.Board.PlaceWall(m.Position, m.Orientation)
 	if !success {
 		return false
 	}
-	distances := Distances(g.Board)
-	for _, player := range []PlayerColor{WHITE, BLACK} {
-		if _, hasDistance := distances[player][g.Players[player].PawnPos]; !hasDistance {
+	for _, player := range g.Players() {
+		distances := Distances(g.Board, player.Color)
+		if _, hasDistance := distances[player.PawnPos]; !hasDistance {
 			removed := g.Board.RemoveWall(m.Position, m.Orientation)
 			if !removed {
 				panic("Failed to remove wall that was just placed.")

@@ -10,7 +10,8 @@ const (
 type PlayerColor int
 
 const (
-	WHITE PlayerColor = iota
+	NONE PlayerColor = iota
+	WHITE
 	BLACK
 )
 

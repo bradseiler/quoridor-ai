@@ -11,6 +11,8 @@ type humanPlayer struct {
 	scanner *bufio.Scanner
 }
 
+var _ Agent = &humanPlayer{}
+
 func NewHumanPlayer(scanner *bufio.Scanner) Agent {
 	return &humanPlayer{
 		scanner: scanner,
